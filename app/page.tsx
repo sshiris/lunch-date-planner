@@ -131,7 +131,7 @@ export default function Home() {
 
         {step === 1 && (
           <StepCard
-            question="Would you like to invite me for lunch?"
+            question="Hello Mikko, Would you like to have lunch with Iris?"
             onNext={() => setStep(2)}
           >
             <div className="space-y-3">
