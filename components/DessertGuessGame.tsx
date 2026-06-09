@@ -1,29 +1,89 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
 
-const desserts = ["Tiramisu", "Cheesecake", "Mochi", "Chocolate cake"] as const;
-const correctDessert = "Mochi";
+const correctAnswers = new Set(["mikko", "me"]);
+
+type GuessState = "idle" | "correct" | "wrong";
 
 export default function DessertGuessGame() {
-  const [guess, setGuess] = useState<(typeof desserts)[number] | null>(null);
-  const [attempts, setAttempts] = useState(0);
+  const [answer, setAnswer] = useState("");
+  const [guessState, setGuessState] = useState<GuessState>("idle");
+  const [showAnswerCard, setShowAnswerCard] = useState(false);
 
-  const message = useMemo(() => {
-    if (!guess) {
-      return "Pick the dessert Iris is thinking about.";
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const normalizedAnswer = answer.trim().toLowerCase();
+
+    if (correctAnswers.has(normalizedAnswer)) {
+      setGuessState("correct");
+      setShowAnswerCard(false);
+      return;
     }
 
-    if (guess === correctDessert) {
-      return "Correct. Dessert negotiations may now begin.";
-    }
+    setGuessState("wrong");
+    setShowAnswerCard(false);
+  }
 
-    return "Very tempting, but not the secret dessert.";
-  }, [guess]);
+  function revealAnswer() {
+    setShowAnswerCard(true);
+  }
 
-  function handleGuess(dessert: (typeof desserts)[number]) {
-    setGuess(dessert);
-    setAttempts((currentAttempts) => currentAttempts + 1);
+  if (showAnswerCard) {
+    return (
+      <main className="flex min-h-screen items-center justify-center px-5 py-10">
+        <section className="w-full max-w-md rounded-[2rem] border border-pink-100 bg-gradient-to-br from-rose-50 to-pink-100 p-6 text-center shadow-2xl shadow-rose-200/50 transition sm:p-8">
+          <div className="text-sm text-rose-400">♡ ♡ ♡</div>
+          <p className="mt-3 text-4xl font-bold text-rose-950">
+            It&apos;s YOU 💕
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  if (guessState === "correct") {
+    return (
+      <main className="flex min-h-screen items-center justify-center px-5 py-10">
+        <section className="w-full max-w-md rounded-[2rem] border border-pink-100 bg-pink-50 p-6 text-center text-rose-800 shadow-2xl shadow-rose-200/50 transition sm:p-8">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-white text-3xl">
+            💕
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-rose-950">
+            Okiii, you know too much about me ...
+          </h1>
+          
+        </section>
+      </main>
+    );
+  }
+
+  if (guessState === "wrong") {
+    return (
+      <main className="flex min-h-screen items-center justify-center px-5 py-10">
+        <section className="w-full max-w-md rounded-[2rem] border border-rose-100 bg-white/85 p-6 text-center shadow-2xl shadow-rose-200/50 backdrop-blur transition sm:p-8">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-pink-100 text-3xl">
+            💌
+          </div>
+          <p className="text-xl font-semibold text-rose-700">
+            Sorry, wrong answer. Wanna know?
+          </p>
+          <div className="mt-7 grid gap-3 sm:grid-cols-3">
+            {["Yes", "Sure", "Of course"].map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={revealAnswer}
+                className="rounded-full border border-rose-200 bg-white/70 px-5 py-3 font-semibold text-rose-600 transition hover:-translate-y-0.5 hover:bg-rose-50 focus:outline-none focus:ring-4 focus:ring-rose-100"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </section>
+      </main>
+    );
   }
 
   return (
@@ -32,43 +92,28 @@ export default function DessertGuessGame() {
         <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-pink-100 text-3xl">
           🍰
         </div>
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-rose-400">
-          Dessert guess game
-        </p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight text-rose-950">
-          Guess the dessert
+        <h1 className="text-3xl font-bold tracking-tight text-rose-950">
+          Hello Mikko 🍰
         </h1>
-        <p className="mt-4 text-base leading-7 text-rose-800">{message}</p>
+        <p className="mt-5 text-lg font-medium leading-7 text-rose-800">
+          Guess what dessert I am thinking about right now?
+        </p>
 
-        <div className="mt-7 grid gap-3">
-          {desserts.map((dessert) => {
-            const isSelected = guess === dessert;
-            const isCorrect = dessert === correctDessert;
-            const showSuccess = isSelected && isCorrect;
-
-            return (
-              <button
-                key={dessert}
-                type="button"
-                onClick={() => handleGuess(dessert)}
-                className={[
-                  "rounded-2xl border px-5 py-4 font-semibold transition focus:outline-none focus:ring-4",
-                  showSuccess
-                    ? "border-emerald-200 bg-emerald-100 text-emerald-800 focus:ring-emerald-100"
-                    : isSelected
-                      ? "border-rose-300 bg-rose-100 text-rose-800 focus:ring-rose-100"
-                      : "border-rose-100 bg-rose-50/70 text-rose-950 hover:border-rose-300 hover:bg-rose-100 focus:ring-rose-100",
-                ].join(" ")}
-              >
-                {dessert}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-7 rounded-3xl bg-rose-50 p-4 text-sm font-medium text-rose-700">
-          Attempts: {attempts}
-        </div>
+        <form onSubmit={handleSubmit} className="mt-7 space-y-4">
+          <input
+            value={answer}
+            onChange={(event) => setAnswer(event.target.value)}
+            placeholder="Type your answer..."
+            className="w-full rounded-2xl border border-rose-100 bg-rose-50/70 px-5 py-4 text-center text-rose-950 outline-none transition placeholder:text-rose-300 focus:border-rose-300 focus:bg-white focus:ring-4 focus:ring-rose-100"
+            type="text"
+          />
+          <button
+            type="submit"
+            className="w-full rounded-full bg-rose-500 px-6 py-3 font-semibold text-white shadow-lg shadow-rose-200 transition hover:-translate-y-0.5 hover:bg-rose-600 focus:outline-none focus:ring-4 focus:ring-rose-200"
+          >
+            Submit Guess
+          </button>
+        </form>
       </section>
     </main>
   );
